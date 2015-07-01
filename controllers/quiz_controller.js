@@ -14,7 +14,10 @@ exports.load = function(req, res, next, quizId) {
 
 // GET /quizes
 exports.index = function(req, res) {
-  models.Quiz.findAll().then(
+  var textoSearch = req.query.search || ""; //Obtenemos el parámetro 'search'
+  textoSearch = "%" + textoSearch.replace(/ /g, '%') + "%"; //Aplicamos comodines
+
+  models.Quiz.findAll({where:["pregunta LIKE ?", textoSearch], order:[['pregunta', 'ASC']]}).then(
     function(quizes) {
       res.render('quizes/index', { quizes: quizes});
     }
