@@ -40,6 +40,27 @@ app.use(function(req, res, next) {
   next();
 });
 
+// Auto-logout
+app.use(function(req, res, next) {
+  if (req.session.user) {
+    var maxTiempoInactivo = 2*60*1000; //minutos*segundos*milisegundos
+    var fechaActual = new Date();
+    var fechaLastAction = new Date(req.session.user.lastAction);
+
+    if ((fechaActual-fechaLastAction) > maxTiempoInactivo) {
+      delete req.session.user;
+      // Redirigimos a la pantalla de login indicando el motivo
+      req.session.errors = [{ "message": 'Excedido tiempo de inactividad en sesión' }];
+      res.redirect("/login");
+      return;
+    } else {
+      // Asignamos la nueva fecha a la última acción
+      req.session.user.lastAction = fechaActual;
+    }
+  }
+  next();
+});
+
 app.use('/', routes);
 
 // catch 404 and forward to error handler
